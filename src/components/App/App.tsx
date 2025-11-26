@@ -1,7 +1,7 @@
 import { useState } from "react";
 import css from "./App.module.css";
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { fetchNotes, deleteNote } from "../../services/noteService";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { fetchNotes } from "../../services/noteService";
 import { useDebounce } from "use-debounce";
 import NoteList from "../NoteList/NoteList";
 import Pagination from "../Pagination/Pagination";
@@ -14,19 +14,17 @@ const PER_PAGE = 12;
 
 export default function App() {
   const [page, setPage] = useState(1);
-  const [searchText, setSearchText] = useState("");
+  const [	searchText, setSearchText] = useState("");
   const [debouncedSearch] = useDebounce(searchText, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const queryClient = useQueryClient();
 
-  //     Скидання сторінки при зміні пошуку 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
     setPage(1);
   };
 
-  //     Отримання нотаток 
+
   const notesQuery = useQuery({
     queryKey: ["notes", page, debouncedSearch],
     queryFn: () =>
@@ -36,20 +34,8 @@ export default function App() {
         search: debouncedSearch,
       }),
     staleTime: 5000,
-      placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
   });
-
-  //      Видалення нотатки
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
-  });
-
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this note?")) {
-      deleteMutation.mutate(id);
-    }
-  };
 
   const data = notesQuery.data as FetchNotesResponse | undefined;
   const notes = data?.notes ?? [];
@@ -83,9 +69,7 @@ export default function App() {
           <p>No notes found.</p>
         )}
 
-        {notes.length > 0 && (
-          <NoteList notes={notes} onDelete={handleDelete} />
-        )}
+        {notes.length > 0 && <NoteList notes={notes} />}
       </main>
 
       {isModalOpen && (
