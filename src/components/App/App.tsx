@@ -8,7 +8,9 @@ import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
 import SearchBox from "../SearchBox/SearchBox";
-import type { FetchNotesResponse } from "../../types/note";
+import type { FetchNotesResponse } from "../../types/noteApi";
+
+const PER_PAGE = 12;
 
 export default function App() {
   const [page, setPage] = useState(1);
@@ -18,12 +20,28 @@ export default function App() {
 
   const queryClient = useQueryClient();
 
-  // --- Запит нотаток ---
+  //     Скидання сторінки при зміні пошуку 
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    setPage(1);
+  };
+
+  //     Отримання нотаток 
   const notesQuery = useQuery({
     queryKey: ["notes", page, debouncedSearch],
     queryFn: () =>
-      fetchNotes({ page, perPage: 12, search: debouncedSearch }),
-    staleTime: 5000,
+      fetchNotes({
+        page,
+        perPage: PER_PAGE,
+        search: debouncedSearch,
+      }),
+      staleTime: 5000,
+  });
+
+  //      Видалення нотатки
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
   });
 
   const handleDelete = (id: string) => {
@@ -32,21 +50,16 @@ export default function App() {
     }
   };
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
-  });
+  const data = notesQuery.data as FetchNotesResponse | undefined;
+  const notes = data?.results ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
   const handleCloseModal = () => setIsModalOpen(false);
-
-  const data = notesQuery.data as FetchNotesResponse | undefined;
-  const totalPages = data?.totalPages ?? 0;
-  const notes = data?.results ?? [];
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox value={searchText} onChange={setSearchText} />
+        <SearchBox value={searchText} onChange={handleSearchChange} />
 
         {totalPages > 1 && (
           <Pagination
@@ -64,8 +77,14 @@ export default function App() {
       <main>
         {notesQuery.isLoading && <p>Loading notes...</p>}
         {notesQuery.isError && <p>Error loading notes.</p>}
-        {notes.length === 0 && !notesQuery.isLoading && <p>No notes found.</p>}
-        {notes.length > 0 && <NoteList notes={notes} onDelete={handleDelete} />}
+
+        {!notesQuery.isLoading && notes.length === 0 && (
+          <p>No notes found.</p>
+        )}
+
+        {notes.length > 0 && (
+          <NoteList notes={notes} onDelete={handleDelete} />
+        )}
       </main>
 
       {isModalOpen && (

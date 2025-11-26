@@ -1,12 +1,12 @@
 import css from "./NoteList.module.css";
 import type { Note } from "../../types/note";
 
-interface Props {
+export interface NoteListProps {
   notes: Note[];
   onDelete?: (id: string) => void;
 }
 
-export default function NoteList({ notes, onDelete }: Props) {
+export default function NoteList({ notes, onDelete }: NoteListProps) {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
@@ -15,12 +15,14 @@ export default function NoteList({ notes, onDelete }: Props) {
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <button
-              className={css.button}
-              onClick={() => onDelete?.(note.id)}
-            >
-              Delete
-            </button>
+            {onDelete && (
+              <button
+                className={css.button}
+                onClick={() => onDelete(note.id)}
+              >
+                Delete
+              </button>
+            )}
           </div>
         </li>
       ))}

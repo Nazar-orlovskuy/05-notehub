@@ -85,18 +85,10 @@ const NoteForm: FC<NoteFormProps> = ({ onClose, onSuccess }) => {
           </div>
 
           <div className={css.actions}>
-            <button
-              type="button"
-              className={css.cancelButton}
-              onClick={onClose}
-            >
+            <button type="button" className={css.cancelButton} onClick={onClose}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className={css.submitButton}
-              disabled={isSubmitting}
-            >
+            <button type="submit" className={css.submitButton} disabled={isSubmitting}>
               Create note
             </button>
           </div>

@@ -1,11 +1,11 @@
 import css from "./SearchBox.module.css";
 
-interface Props {
+export interface SearchBoxProps {
   value: string;
   onChange: (val: string) => void;
 }
 
-export default function SearchBox({ value, onChange }: Props) {
+export default function SearchBox({ value, onChange }: SearchBoxProps) {
   return (
     <input
       className={css.input}
