@@ -1,6 +1,6 @@
 import { useState } from "react";
 import css from "./App.module.css";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchNotes, deleteNote } from "../../services/noteService";
 import { useDebounce } from "use-debounce";
 import NoteList from "../NoteList/NoteList";
@@ -35,7 +35,8 @@ export default function App() {
         perPage: PER_PAGE,
         search: debouncedSearch,
       }),
-      staleTime: 5000,
+    staleTime: 5000,
+      placeholderData: keepPreviousData
   });
 
   //      Видалення нотатки
@@ -51,7 +52,7 @@ export default function App() {
   };
 
   const data = notesQuery.data as FetchNotesResponse | undefined;
-  const notes = data?.results ?? [];
+  const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
 
   const handleCloseModal = () => setIsModalOpen(false);
